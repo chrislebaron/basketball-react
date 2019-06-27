@@ -3,6 +3,7 @@ import Search from "./Search";
 import Card from "./Card";
 import styles from "./styles";
 import axios from 'axios';
+import parse from 'parse-link-header'
 
 class Main extends Component {
 
@@ -10,9 +11,12 @@ class Main extends Component {
       super();
       this.state = {
         players: [],
-        teams: []
+        teams: [],
+        links: {}
       }
     }
+
+
     render() {
         // PREP THE PLAYER CARD COMPONENT WITH THE DATA IT NEEDS
         const playerList = this.state.players.map((player, key) => {
@@ -20,12 +24,11 @@ class Main extends Component {
           const team = this.state.teams.find(team => team.id === player.team)
           return(<Card
             name={player.name}
-            team={team.name}
             image={image}
+            team={team ? team.name : ''}
             key={key}
           />)
         });
-
 
         return (
             <div style={{ ...styles.container, ...this.props.style }}>
@@ -33,24 +36,36 @@ class Main extends Component {
                 <Search style={styles.search} />
 
                 {playerList}
+              <div style={styles.pagination}>
+                  <a href="#" onClick={() => this.getPlayers(this.state.links.prev ? this.state.links.prev.url: null)}>Previous</a> | <a href="#" onClick={() => this.getPlayers(this.state.links.next ? this.state.links.next.url : null)}>Next</a>
+              </div>
             </div>
         );
     }
 
     async componentDidMount() {
-      
-      // GET THE PLAYER LIST
-      const playersResult = await axios.get('http://localhost:3008/players');
+        // GET THE PLAYER LIST
+        await this.getPlayers();
+
+        // GET THE TEAMS LIST
+        const teamsResult = await axios.get('http://localhost:3008/teams');
+        const teams = teamsResult.data;
+        console.log('GOT TEAMS', teams);
+        this.setState({teams})
+    }
+
+    getPlayers = async (url) => {
+      // console.log('URL CLICKED', url);
+      if(!url) url = "http://localhost:3008/players?_page=1&_limit=10";
+      const playersResult = await axios.get(url);
+      // console.log('Full Player Results Info', playersResult);
       const players = playersResult.data;
-      console.log('GOT PLAYERS', players);
+      // console.log('GOT PLAYERS', players);
 
-      // GET THE TEAMS LIST
-      const teamsResult = await axios.get('http://localhost:3008/teams');
-      const teams = teamsResult.data;
-      console.log('GOT TEAMS', teams);
+      const links = parse(playersResult.headers.link);
+      console.log('GOT THE LINKS', links);
 
-
-      this.setState({players, teams})
+      this.setState({players, links});
     }
 }
 

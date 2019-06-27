@@ -7,12 +7,20 @@ export default {
         margin: "10px",
         width: "280px",
         textAlign: "center",
+        fontFamily: "sans-serif",
         display: "inline-block"
     },
     name: {
-        paddingBottom: "16px"
+        paddingBottom: "16px",
+        fontSize: "24px",
+        // fontWeight: "bold"
     },
     playerImage: {
         paddingBottom: "16px"
+    },
+    pagination: {
+        display:"block",
+        width: "100%",
+        textAlign: "center"
     }
 };
